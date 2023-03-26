@@ -9,4 +9,9 @@ A short graphic library writen in c from the ground off.
 ## Ressources 
 
 * The PPM format http://people.uncw.edu/tompkinsj/112/texnh/assignments/imageFormat.html
-* 
+
+## Funtions
+
+* graphlib_fill_rect
+
+* graphlib_fill_circle

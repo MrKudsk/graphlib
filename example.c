@@ -2,41 +2,71 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 #include <errno.h>
 #include "graphlib.c"
 
 #define WIDTH 800
 #define HEIGHT 600
 
-void graphlib_fill_rect(uint32_t *pixels, size_t width, size_t height, int x0, int y0, size_t w, size_t h, uint32_t color)
-{
-    for (int dy = 0; dy < (int) h; ++dy) {
-        int y = y0 + dy;
-        if (0 <= y && y < (int) height) {
-            for (int dx = 0; dx < (int) w; ++dx) {
-                int x = x0 + dx;
-                if (0 <= x && x < (int) width) {
-                    pixels[y*width + x] = color;
-                }
-            }
-        }
-    }
-}
+#define COLS 8
+#define ROWS 6
+#define CELL_WIDTH (WIDTH/COLS)
+#define CELL_HEIGHT (HEIGHT/ROWS)
+
+#define BACKGROUND_COLOR 0xFF202020
+#define FOREGROUND_COLOR 0xFF2020FF
 
 static uint32_t pixels[HEIGHT*WIDTH];
 
-int main(void)
-    {
-    graphlib_fill(pixels, WIDTH, HEIGHT, 0xFF202020);
-    int rw = 50*4;
-    int rh = 30*4;
-    graphlib_fill_rect(pixels, WIDTH, HEIGHT, WIDTH/2 - rw/2, HEIGHT/2 - rh/2, rw, rh, 0xFF2020FF);
-    const char *file_path = "output.ppm";
+bool checker_example(void)
+{
+    graphlib_fill(pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
+
+    for (int y = 0; y < ROWS; ++y) {
+       for (int x = 0; x < COLS; ++x) {
+            uint32_t color = BACKGROUND_COLOR;
+            if ((x + y)%2 == 0) {
+                color = FOREGROUND_COLOR;
+            }
+            graphlib_fill_rect(pixels, WIDTH, HEIGHT, x*CELL_WIDTH, y*CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT, color);
+        }
+    }
+    const char *file_path = "checker.ppm";
     Errno err = graphlib_save_to_ppm_file(pixels, WIDTH, HEIGHT, file_path);
     if (err) {
         fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path, strerror(errno));
-        return 1;
+        return false;
     }
-    printf("Hello, World\n");
+    return true;
+}
+
+bool circle_example(void)
+{
+    graphlib_fill(pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
+
+    for (int y = 0; y < ROWS; ++y) {
+       for (int x = 0; x < COLS; ++x) {
+            size_t radius = CELL_WIDTH;
+            if (CELL_HEIGHT < radius) radius = CELL_HEIGHT;
+                graphlib_fill_circle(pixels, WIDTH, HEIGHT, x*CELL_WIDTH + CELL_WIDTH/2, y*CELL_HEIGHT + CELL_HEIGHT/2, radius/2, FOREGROUND_COLOR);
+        }
+    }
+
+    const char *file_path = "circle.ppm";
+    Errno err = graphlib_save_to_ppm_file(pixels, WIDTH, HEIGHT, file_path);
+    if (err) {
+        fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path, strerror(errno));
+        return false;
+    }
+    return true;
+}
+
+int main(void)
+{
+    printf("Running program:\n");
+
+    if (!checker_example()) return -1;
+    if (!circle_example()) return -1;
     return 0;
 }

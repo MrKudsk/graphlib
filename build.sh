@@ -2,4 +2,9 @@
 
 set -xe
 
-cc -Wall -Wextra -o example example.c
+COMMON_CFLAGS="-Wall -Wextra -ggdb -I. -I./build/ -I./thirdparty/"
+
+mkdir -p ./build/
+
+# Build test
+clang $COMMON_CFLAGS -o ./build/test test.c -lm
